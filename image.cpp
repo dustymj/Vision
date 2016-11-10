@@ -1,12 +1,6 @@
 // image.cpp
 // Contains the code that handles bitmap images.
 
-// These headers may not be needed, as they are handled in the main.
-#include <stdlib.h>
-#include <iomanip.h>
-#include <fstream.h>
-#include <math.h>
-
 typedef unsigned char byte_t;
 
 struct bmpFILEHEADER {
@@ -20,7 +14,7 @@ struct bmpFILEHEADER {
 };
 
 struct bmpINFOHEADER {
-   
+
    // Size of the bmpInfoHeader
    byte_t biSize[4];
 
@@ -38,14 +32,14 @@ struct bmpINFOHEADER {
    byte_t biSizeImage[4]; // The size of the padded image, in bytes
    byte_t biXPelsPerMeter[4];
    byte_t biYPelsPermeter[4];
-   byte_t biClrUsed[4]; 
+   byte_t biClrUsed[4];
    byte_t biClrImportant[4];
 };
 
 struct bmpPALLETTE {
 
    // This will need to be improved if the program is to scale.
-   // Unless we change the palette, this will do. 
+   // Unless we change the palette, this will do.
    byte_t palPalette[1024];
 };
 
@@ -58,18 +52,35 @@ struct bmpBITMAP_FILE {
    bmpINFOHEADER info_header;
    bmpPALLETTE   palette;
 
-   // This implementation will not generalize. Fixed at 256 shades of grey. 
+   // This implementation will not generalize. Fixed at 256 shades of grey.
 
-   // This points to the image. Allows the allocation of a two 
+   // This points to the image. Allows the allocation of a two
    // dimensional array dynamically.
    byte_t **image_ptr;
 };
+
+// ----------------------------------------------------------
+// Function Declarations
+
+void open_input_file(ifstream &in_file);
+int Assemble_Integer(unsigned char bytes[]);
+void Display_FileHeader(bmpFILEHEADER &file_header);
+void Display_InfoHeader(bmpINFOHEADER &info_header);
+int Calc_Padding(int pixel_width);
+void Load_Bitmap_File(bmpBITMAP_FILE &image);
+void Display_Bitmap_File(bmpBITMAP_FILE &image);
+void Copy_Image(bmpBITMAP_FILE &image_orig, bmpBITMAP_FILE &image_copy);
+void Remove_Image(bmpBITMAP_FILE &image);
+void Save_Bitmap_File(bmpBITMAP_FILE &image);
+void Open_Output_File(ofstream &out_file);
+// ----------------------------------------------------------
+
 
 /* ----------------------------------------------------------
    open_input_file
 
    INPUTS
-   in_file - Input stream that points to the file. 
+   in_file - Input stream that points to the file.
 
    DESCRIPTION
    Gets the name of the input file from the user and opens it for input
@@ -83,7 +94,7 @@ void open_input_file (ifstream &in_file) {
    cout << "Enter the name of the file " << endl << "which contains the bitmap: ";
    cin >> in_file_name;
 
-   in_file.open(in_file_name, ios::in | ios:binary);
+   in_file.open(in_file_name, ios::in | ios::binary);
    if (!in_file) {
       cerr << "Error opening file \a\a\n", exit(101);
    }
@@ -101,10 +112,10 @@ void open_input_file (ifstream &in_file) {
    Assembles the bytes into a signed integer and returns the result
 
    RETURNS
-   A signed integer 
+   A signed integer
 -------------------------------------------------------------*/
 int Assemble_Integer(unsigned char bytes[]) {
-   
+
    int an_integer;
 
    an_integer  = int(bytes[0]);
@@ -122,9 +133,9 @@ int Assemble_Integer(unsigned char bytes[]) {
    fileheader - A pointer to a bitmaps file header
 
    DESCRIPTION
-   Displays the file header of a bitmap file 
+   Displays the file header of a bitmap file
 
-   RETURNS 
+   RETURNS
    Nothing
 ------------------------------------------------------------*/
 void Display_FileHeader(bmpFILEHEADER &fileheader) {
@@ -142,23 +153,23 @@ void Display_FileHeader(bmpFILEHEADER &fileheader) {
    infoheader - A pointer to a bitmap's info header
 
    DESCRIPTION
-   Displays the info header of a bitmap file 
+   Displays the info header of a bitmap file
 
-   RETURNS 
+   RETURNS
    Nothing
 -----------------------------------------------------------*/
-void Display_InfoHeader(bmpINFOHEADER &infoheader) {
+void Display_InfoHeader(bmpINFOHEADER &info_header) {
 
    cout << endl << "The bmpInfoHeader contains the following:" << endl;
-   cout << "biSize:         " << Assemble_Integer(infoheader.biSize) << endl;
-   cout << "biWidth:        " << Assemble_Integer(infoheader.biWidth) << endl;
-   cout << "biHeight:       " << Assemble_Integer(infoheader.biHeight) << endl;
-   cout << "biPlanes:       " << int(infoheader.biPlanes[0]) + int(infoheader.biPlanes[1]) * 256 << endl;
-   cout << "biBitCount:     " << int(infoheader.biBitCount[0]) + int(infoheader.biBitCount[1]) * 256 << endl;
-   cout << "biCompression:  " << Assemble_Integer(infoheader.biCompression) << endl;
-   cout << "biSizeImage:    " << Assemble_Integer(infoheader.biSizeImage) << endl;
-   cout << "biClrUsed:      " << Assemble_Integer(infoheader.biClrUsed) << endl;
-   cout << "biClrImportant: " << Assemble_Integer(infoheader.biClrImportant) << endl;
+   cout << "biSize:         " << Assemble_Integer(info_header.biSize) << endl;
+   cout << "biWidth:        " << Assemble_Integer(info_header.biWidth) << endl;
+   cout << "biHeight:       " << Assemble_Integer(info_header.biHeight) << endl;
+   cout << "biPlanes:       " << int(info_header.biPlanes[0]) + int(info_header.biPlanes[1]) * 256 << endl;
+   cout << "biBitCount:     " << int(info_header.biBitCount[0]) + int(info_header.biBitCount[1]) * 256 << endl;
+   cout << "biCompression:  " << Assemble_Integer(info_header.biCompression) << endl;
+   cout << "biSizeImage:    " << Assemble_Integer(info_header.biSizeImage) << endl;
+   cout << "biClrUsed:      " << Assemble_Integer(info_header.biClrUsed) << endl;
+   cout << "biClrImportant: " << Assemble_Integer(info_header.biClrImportant) << endl;
 }
 
 /*----------------------------------------------------------
@@ -178,7 +189,7 @@ void Display_InfoHeader(bmpINFOHEADER &infoheader) {
    are not evenly divisible by 4.
 
    RETURNS
-   int - The number of bytes of pading for an image 
+   int - The number of bytes of pading for an image
          (either 0,1,2,3)
 -------------------------------------------------------------*/
 int Calc_Padding(int pixel_width){
@@ -189,13 +200,13 @@ int Calc_Padding(int pixel_width){
    the_remainder = pixel_width % 4;
 
    switch (the_remainder) {
-      case 0: 
+      case 0:
          padding = 0;
          break;
-      case 1: 
+      case 1:
          padding = 3;
          break;
-      case 2: 
+      case 2:
          padding = 2;
          break;
       case 3:
@@ -208,7 +219,7 @@ int Calc_Padding(int pixel_width){
 
    return padding;
 }
-                                    
+
 /*------------------------------------------------------------
    Load_Bitmap_File
 
@@ -229,24 +240,24 @@ void Load_Bitmap_File(bmpBITMAP_FILE &image) {
    int bitmap_height;
    int padding;
 
-   long int cursor1:
+   long int cursor1;
 
    open_input_file(fs_data);
-   fs_data.read((char*) &image.fileheader, sizeof(bmpFILEHEADER));
-   fs_data.read((char*) &image.infoheader, sizeof(bmpINFOHEADER));
+   fs_data.read((char*) &image.file_header, sizeof(bmpFILEHEADER));
+   fs_data.read((char*) &image.info_header, sizeof(bmpINFOHEADER));
    fs_data.read((char*) &image.palette, sizeof(bmpPALLETTE));
 
-   bitmap_height = Assemble_Integer(image.infoheader.biHeight);
-   bitmap_width  = Assemble_Integer(image.infoheader.biWidth);
+   bitmap_height = Assemble_Integer(image.info_header.biHeight);
+   bitmap_width  = Assemble_Integer(image.info_header.biWidth);
    padding       = Calc_Padding(bitmap_width);
 
    // Allocate a 2 dimensional array
    image.image_ptr = new byte_t*[bitmap_height];
    for (int i = 0; i < bitmap_height; i++) {
-      image.img_ptr[i] = new byte_t[bitmap_width];
+      image.image_ptr[i] = new byte_t[bitmap_width];
    }
 
-   cursor1 = Assemble_Integer(image.fileheader.bfOffbits);
+   cursor1 = Assemble_Integer(image.file_header.bfOffbits);
    fs_data.seekg(cursor1); // Moves cursor to beginning of the image data
 
    // Load the bytes into the new aray one line at a time
@@ -274,11 +285,11 @@ void Display_Bitmap_File(bmpBITMAP_FILE &image) {
    int bitmap_width;
    int bitmap_height;
 
-   Display_FileHeader(image.fileheader);
-   Display_InfoHeader(image.infoheader);
+   Display_FileHeader(image.file_header);
+   Display_InfoHeader(image.info_header);
 
-   bitmap_height = Assemble_Integer(image.infoheader.biHeight);
-   bitmap_width  = Assemble_Integer(image.infoheader.biWidth);
+   bitmap_height = Assemble_Integer(image.info_header.biHeight);
+   bitmap_width  = Assemble_Integer(image.info_header.biWidth);
 
    for (int i = 0; i < bitmap_height; i++) {
       for (int j = 0; j < bitmap_width; j++) {
@@ -306,12 +317,12 @@ void Copy_Image(bmpBITMAP_FILE &image_orig,
    int height;
    int width;
 
-   image_copy.fileheader = image_orig.fileheader;
-   image_copy.infoheader = image_orig.infoheader;
+   image_copy.file_header = image_orig.file_header;
+   image_copy.info_header = image_orig.info_header;
    image_copy.palette    = image_orig.palette;
 
-   height = Assemble_Integer(image_copy.infoheader.biHeight);
-   width  = Assemble_Integer(image_copy.infoheader.biWidth);
+   height = Assemble_Integer(image_copy.info_header.biHeight);
+   width  = Assemble_Integer(image_copy.info_header.biWidth);
 
    image_copy.image_ptr = new byte_t*[height];
 
@@ -335,7 +346,7 @@ void Copy_Image(bmpBITMAP_FILE &image_orig,
            image.byte_t contains pointers to a 2-dim array
 
    DESCRIPTION
-   Memory that **byte_t points to in the image is freed, and 
+   Memory that **byte_t points to in the image is freed, and
    image.bfType[] is set to "XX".
 
    RETURNS
@@ -346,8 +357,8 @@ void Remove_Image(bmpBITMAP_FILE &image) {
    int height;
    int width;
 
-   height = Assemble_Integer(image.infoheader.biHeight);
-   width  = Assemble_Integer(image.infoheader.biWidth);
+   height = Assemble_Integer(image.info_header.biHeight);
+   width  = Assemble_Integer(image.info_header.biWidth);
 
    // Delete the dynamic memory
    for (int i = 0; i < height; i++) {
@@ -356,9 +367,9 @@ void Remove_Image(bmpBITMAP_FILE &image) {
 
    delete [] image.image_ptr;
 
-   image.fileheader.bfType[0] = 'X';  // just to mark it as
-   image.fileheader.bfType[1] = 'X';  // unused.
-   
+   image.file_header.bfType[0] = 'X';  // just to mark it as
+   image.file_header.bfType[1] = 'X';  // unused.
+
    // Also, we may wish to initialize all the header
    // info to zero.
 }
@@ -366,48 +377,48 @@ void Remove_Image(bmpBITMAP_FILE &image) {
 //================= Save_Bitmap_File =======================
 //
 void Save_Bitmap_File(bmpBITMAP_FILE &image) {
-   
+
    ofstream fs_data;
 
    int width;
    int height;
    int padding;
    long int cursor1;
-    
-   height = Assemble_Integer(image.infoheader.biHeight);
-   width  = Assemble_Integer(image.infoheader.biWidth);
-    
+
+   height = Assemble_Integer(image.info_header.biHeight);
+   width  = Assemble_Integer(image.info_header.biWidth);
+
    Open_Output_File(fs_data);
-    
-   fs_data.write ((char *) &image.fileheader, sizeof(bmpFILEHEADER));
-   
+
+   fs_data.write ((char *) &image.file_header, sizeof(bmpFILEHEADER));
+
    if (!fs_data.good()) {
-      cout << "\aError 101 writing bitmapfileheader";
+      cout << "\aError 101 writing bitmapfile_header";
       cout << " to file.\n";
       exit (101);
    }
-    
-   fs_data.write ((char *) &image.infoheader, sizeof(bmpINFOHEADER));
-   
+
+   fs_data.write ((char *) &image.info_header, sizeof(bmpINFOHEADER));
+
    if (!fs_data.good()) {
       cout << "\aError 102 writing bitmap";
-      cout << " infoheader to file.\n";
+      cout << " info_header to file.\n";
       exit (102);
    }
-    
-   fs_data.write ((char *) &image.palette, sizeof(bmpPALETTE));
-   
+
+   fs_data.write ((char *) &image.palette, sizeof(bmpPALLETTE));
+
    if (!fs_data.good()) {
       cout << "\aError 103 writing bitmap palette to";
       cout << "file.\n";
       exit (103);
    }
-   
+
    // This loop writes the image data
    for (int i = 0; i < height; i++) {
       for (int j=0; j<width; j++) {
          fs_data.write((char *) &image.image_ptr[i][j], sizeof(byte_t));
-         
+
          if (!fs_data.good()) {
             cout << "\aError 104 writing bitmap data";
             cout << "to file.\n";

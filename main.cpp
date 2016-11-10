@@ -3,12 +3,14 @@
 // Micah Most
 
 // Standard header files
-#include <fstream.h>
-#include <iomanip.h>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <math.h>
-#include <stdlib>
+#include <stdlib.h>
 #include <string>
+
+using namespace std;
 
 // Classes
 #include "image.cpp"
@@ -32,23 +34,39 @@ int main() {
    */
 
    // Global variables
-   int FILE_SIZE = 787512;
+   bmpBITMAP_FILE orig_image;
+   bmpBITMAP_FILE copy1;
 
-   string input_file;
-   string output_file = "the_box.bmp";
+   Load_Bitmap_File(orig_image);
 
-   unsigned char buffer[FILE_SIZE];
+   Display_FileHeader(orig_image.file_header);
+   Display_InfoHeader(orig_image.info_header);
+   //copies from orig_image to copy1
 
-   // Get the picture name from the user
-   cout << "What is the name of the picture file?" << endl;
-   cin >> input_file;
+   Copy_Image(orig_image, copy1);
+   cout << "A copy of the file has been "
+        << "made in main memory." << endl;
 
-   // Input stream to read in the picture
-   ifstream myFile (input_file, ios::in | ios::binary);
-   myFile.read (buffer, FILE_SIZE); 
+   Remove_Image(orig_image); // frees dynamic memory too
 
-   // Output stream to write out the picture
-   ofstream hFile (output_file, ios::out | ios::binary);
-   hFile.write (buffer, FILE_SIZE); // Test call, will be omitted later.
+   cout << "The original image has been "
+        << "removed from main memory." << endl << endl
+        << "Begin image processing..." << endl;
+
+   // Change_Brightness(copy1, -50);
+
+   // Drop_Dark(copy1, 195);
+
+   Change_Contrast(copy1, 2);
+
+   cout << endl << "To show that the copy starts as " <<
+      "an exact copy of the original,";
+
+   cout << endl << "Save the copy as a bitmap." << endl;
+   Save_Bitmap_File(copy1);
+
+   Remove_Image(copy1);
+
+   return 0;
 
 }
