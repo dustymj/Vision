@@ -125,3 +125,73 @@ void Histogram_Equalization(bmpBITMAP_FILE &image) {
       }
    }
 }
+
+/*------------------------------------------------------
+   Reduce Noise
+
+   INPUTS
+   image - Pointer to a bitmap image
+
+   DESCRIPTION
+   This function will take image and look at a 3x3 block of 
+   the image, and find the median in all of the pixels. It will
+   then assign the median value of the pixels to the entire range.
+
+   RETURNS
+   Nothing
+
+   NOTE: Due to the nature of for loops, the outer edge of the 
+         pixels won't be affected. However, with the implementation
+         of the Hough Transformation later, anything that happens
+         along the outside edge will likely be omitted. 
+----------------------------------------------------------*/
+
+void Reduce_Noise(bmpBITMAP_FILE &image) {
+   int bitmap_width;
+   int bitmap_height;
+   int median;
+   int count;
+
+   int pixel_values[9];
+
+   bitmap_height = Assemble_Integer(image.info_header.biHeight);
+   bitmap_width  = Assemble_Integer(image.info_header.biWidth);
+
+   // These 2 outside for loops will scan through the entire image
+   for(int i = 0; i < bitmap_height; i += 3) {
+      for (int j = 0; j < bitmap_width; j += 3) {
+         median = 0;
+         count  = 0;
+
+         // Ensure the array is wiped.
+         for (int z = 0; z < 9; z++) {
+            pixel_values[z] = 0;
+         }
+
+         // Loop through the specified 3x3 block to find the median
+         for(int a = i; a < (i + 3); a++) {
+            for(int b = j; b < (j + 3); b++) {
+               pixel_values[count] = image.image_ptr[a][b];
+               count++;
+            }
+         }
+
+         // Sort the array, sort built into <algorithm>
+         sort(pixel_values, pixel_values + 9);
+
+         // Determine the median
+         median = pixel_values[4];
+
+         // Reduce noise in the 3x3 space.
+         for(int a = i; a < (i + 3); i++) {
+            for(int b = j; b < (j + 3); j++) {
+               image.image_ptr[a][b] = ( (image.image_ptr[a][b] + median) / 2);
+            }
+         }
+
+         // Done
+      }
+   }
+
+   // Out of all for loops.
+}
