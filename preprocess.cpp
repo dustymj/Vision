@@ -71,3 +71,57 @@ void Change_Contrast(bmpBITMAP_FILE &image, int level) {
       }
    }
 }
+
+/*------------------------------------------------------------
+   Histogram_Equalization
+
+   INPUTS
+   image - Pointer to a bitmap image
+
+   DESCRIPTION
+   Changes the contrast in the image.
+
+   RETURNS
+   Nothing
+-------------------------------------------------------------*/
+void Histogram_Equalization(bmpBITMAP_FILE &image) {
+
+   int bitmap_width;
+   int bitmap_height;
+   int current_level;
+   int sum = 0;
+   int max = 0;
+   int pixel_count;
+   int cumlative_histogram[256];
+   int histogram[256] = {0};
+
+   bitmap_height = Assemble_Integer(image.info_header.biHeight);
+   bitmap_width  = Assemble_Integer(image.info_header.biWidth);
+   pixel_count   = bitmap_height * bitmap_width;
+
+   // Populate histogram
+   for (int i = 0; i < bitmap_height; i++) {
+      for (int j = 0; j < bitmap_width; j++) {
+         current_level = int(image.image_ptr[i][j]);
+         histogram[current_level]++;
+
+         if(current_level > max)
+            max = current_level;
+      }
+   }
+
+   // Populate and normalize the cumlative histogram
+   cumlative_histogram[0] = histogram[0];
+   for(int i = 0; i < 256; i++) {
+      sum += histogram[i];
+      cumlative_histogram[i] = sum * max / pixel_count;
+   }
+
+   // Write the equalized values back to the image
+   for(int i = 0; i < bitmap_height; i++) {
+      for (int j = 0; j < bitmap_width; j++) {
+         current_level = image.image_ptr[i][j];
+         image.image_ptr[i][j] = cumlative_histogram[current_level];
+      }
+   }
+}
