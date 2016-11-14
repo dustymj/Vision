@@ -65,7 +65,10 @@ int main() {
    // Simple_detect_egdes(copy1, 40);
 
    Kirsh_detect_egdes(copy1, 5, 150);
-   Kirsh_detect_egdes(copy1, 5, 150);
+   // Kirsh_detect_egdes(copy1, 5, 150);
+
+   cout << "Begin thinning the image" << endl;
+   Thin_Edges(copy1);
 
 
    cout << endl << "To show that the copy starts as " <<

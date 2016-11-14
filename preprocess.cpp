@@ -34,7 +34,7 @@ void Change_Brightness(bmpBITMAP_FILE &image, int level) {
          if(reduction < 0)
             image.image_ptr[i][j] = 0;
          else if (reduction > 255)
-            iamge.image_ptr[i][j] = 255;
+            image.image_ptr[i][j] = 255;
          else
             image.image_ptr[i][j] = reduction;
       }
@@ -373,6 +373,168 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
    Remove_Image(edges);
 }
 
+// The following are helper functions for Thin_Edges. 
+// Thus, they should be thought of as "private".
+bool Identical (bmpBITMAP_FILE &a, bmpBITMAP_FILE &b) {
+   int height = Assemble_Integer(a.info_header.biHeight);
+   int width  = Assemble_Integer(b.info_header.biWidth);
+
+   for (int i = 0; i < height; i++) {
+      for (int j = 0; j < width; j++) {
+         if (a.image_ptr[i][j] != b.image_ptr[i][j]) {
+            return false;
+         }
+      }
+   }
+   return true;
+}
+
+bool Lower (bmpBITMAP_FILE &im, int i, int j) {
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j-1] == WHITE))
+      return true;
+   return false;
+}
+
+bool Upper (bmpBITMAP_FILE &im, int i, int j) {
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j+1] == WHITE))
+      return true;
+   return false;
+}
+
+bool Left (bmpBITMAP_FILE &im, int i, int j) {
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i-1][j] == WHITE))
+      return true;
+   return false;
+}
+
+bool Right (bmpBITMAP_FILE &im, int i, int j) {
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i+1][j] == WHITE))
+      return true;
+   return false;
+}
+
+bool a1 (bmpBITMAP_FILE &im, int i, int j) {
+   bool above;
+   bool with;
+   bool below;
+
+   above = ((im.image_ptr[i-1][j+1] == BLACK) || 
+            (im.image_ptr[i][j+1]   == BLACK) ||
+            (im.image_ptr[i+1][j+1] == BLACK));
+   with  = ((im.image_ptr[i-1][j]   == WHITE) &&
+            (im.image_ptr[i][j]     == BLACK) &&
+            (im.image_ptr[i+1][j]   == WHITE));
+   below = ((im.image_ptr[i-1][j-1] == BLACK) ||
+            (im.image_ptr[i][j-1]   == WHITE) ||
+            (im.image_ptr[i+1][j-1] == BLACK));
+   return (above && with && below);
+}
+
+bool a2 (bmpBITMAP_FILE &im, int i, int j) {
+   bool left;
+   bool with;
+   bool right;
+
+   left = ((im.image_ptr[i-1][j-1] == BLACK) ||
+           (im.image_ptr[i-1][j]   == BLACK) ||
+           (im.image_ptr[i-1][j+1] == BLACK));
+   with = ((im.image_ptr[i][j-1]   == WHITE) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i][j+1]   == WHITE));
+   right = ((im.image_ptr[i+1][j-1] == BLACK) ||
+            (im.image_ptr[i+1][j]   == BLACK) ||
+            (im.image_ptr[i+1][j+1] == BLACK));
+   return (left && with && right);
+}
+
+bool a3 (bmpBITMAP_FILE &im, int i, int j) {
+   bool ll;
+   bool with;
+   bool ur;
+   ll = ((im.image_ptr[i-1][j]   == BLACK) ||
+         (im.image_ptr[i-1][j-1] == BLACK) ||
+         (im.image_ptr[i][j-1]   == BLACK));
+   with = ((im.image_ptr[i-1][j+1] == WHITE) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i+1][j-1] == WHITE));
+   ur = ((im.image_ptr[i][j+1]   == BLACK) ||
+         (im.image_ptr[i+1][j+1] == BLACK) ||
+         (im.image_ptr[i+1][j]   == BLACK));
+   return (ll && with && ur);
+}
+
+bool a4 (bmpBITMAP_FILE &im, int i, int j) {
+   bool ul;
+   bool with;
+   bool lr;
+   ul = ((im.image_ptr[i-1][j]   == BLACK) || 
+         (im.image_ptr[i-1][j+1] == BLACK) ||
+         (im.image_ptr[i][j+1]   == BLACK));
+   with = ((im.image_ptr[i-1][j-1] == WHITE) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i+1][j+1] == WHITE));
+   lr = ((im.image_ptr[i+1][j]   == BLACK) ||
+         (im.image_ptr[i+1][j-1] == BLACK) ||
+         (im.image_ptr[i][j-1]   == BLACK));
+   return (ul && with && lr);
+}
+
+bool IsAnA (bmpBITMAP_FILE &im, int i, int j) {
+   return ( a1(im,i,j) || a2(im,i,j) || a3(im,i,j) || a4(im,i,j));
+}
+
+bool b1 (bmpBITMAP_FILE &im, int i, int j) {
+   bool above;
+   bool with;
+   above = ((im.image_ptr[i-1][j+1] == BLACK) ||
+            (im.image_ptr[i][j+1]   == BLACK) ||
+            (im.image_ptr[i+1][j+1] == BLACK));
+   with = ((im.image_ptr[i-1][j-1] == WHITE) &&
+           (im.image_ptr[i][j-1]   == BLACK) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i+1][j]   == WHITE));
+   return (above && with);
+}
+
+bool b2 (bmpBITMAP_FILE &im, int i, int j) {
+   bool left;
+   bool with;
+   left = ((im.image_ptr[i-1][j-1] == BLACK) ||
+           (im.image_ptr[i-1][j]   == BLACK) ||
+           (im.image_ptr[i-1][j+1] == BLACK));
+   with = ((im.image_ptr[i][j-1]   == WHITE) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i+1][j]   == BLACK) &&
+           (im.image_ptr[i+1][j+1] == WHITE));
+   return (left && with);
+}
+
+bool b3 (bmpBITMAP_FILE &im, int i, int j) {
+   bool below;
+   bool with;
+   below = ((im.image_ptr[i-1][j-1] == BLACK) ||
+            (im.image_ptr[i][j-1]   == BLACK) ||
+            (im.image_ptr[i+1][j-1] == BLACK));
+   with = ((im.image_ptr[i-1][j]   == WHITE) &&
+           (im.image_ptr[i][j]     == BLACK) &&
+           (im.image_ptr[i][j+1]   == BLACK) &&
+           (im.image_ptr[i+1][j+1] == WHITE));
+   return (below && with);
+}
+
+bool b4 (bmpBITMAP_FILE &im, int i, int j) {
+   bool right;
+   bool with;
+   right = ((im.image_ptr[i+1][j-1] == BLACK) ||
+            (im.image_ptr[i+1][j]   == BLACK) ||
+            (im.image_ptr[i+1][j+1] == BLACK));
+   with = ((im.image_ptr[i-1][j-1]  == WHITE) &&
+           (im.image_ptr[i-1][j]    == BLACK) &&
+           (im.image_ptr[i][j]      == BLACK) &&
+           (im.image_ptr[i][j+1]    == WHITE));
+   return (right && with);
+}
+
 /*-----------------------------------------------------------------------------------------------
    Thin_Edges
 
@@ -391,7 +553,7 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
    bmpBITMAP_FILE contour_points;
 
    int height = Assemble_Integer(image.info_header.biHeight);
-   int width  = Assemble_Integer(iamge.info_header.biWidth);
+   int width  = Assemble_Integer(image.info_header.biWidth);
    int cycle = 0;
 
    // Readjust height and width so they stay within bounds
@@ -469,166 +631,4 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
    // At this point, the original image has been thinned. return.
    Remove_Image(final_points);
    Remove_Image(contour_points);
-}
-
-// The following are helper functions for Thin_Edges. 
-// Thus, they are private.
-private bool Identical (bmpBITMAP_FILE &a, bmpBITMAP_FILE &b) {
-   int height = Assemble_Integer(a.info_header.biHeight);
-   int width  = Assemble_Integer(b.info_header.biWidth);
-
-   for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
-         if (a.image_ptr[i][j] != b.image_ptr[i][j]) {
-            return false;
-         }
-      }
-   }
-   return true;
-}
-
-private bool Lower (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j-1] == WHITE)
-      return true;
-   return false;
-}
-
-private bool Upper (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j+1] == WHITE))
-      return true;
-   return false;
-}
-
-private bool Left (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i-1][j] == WHITE))
-      return true;
-   return false;
-}
-
-private bool Right (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i+1][j] == WHITE))
-      return true;
-   return false;
-}
-
-private bool a1 (bmpBITMAP_FILE &im, int i, int j) {
-   bool above;
-   bool with;
-   bool below;
-
-   above = ((im.image_ptr[i-1][j+1] == BLACK) || 
-            (im.image_ptr[i][j+1]   == BLACK) ||
-            (im.image_ptr[i+1][j+1] == BLACK));
-   with  = ((im.image_ptr[i-1][j]   == WHITE) &&
-            (im.image_ptr[i][j]     == BLACK) &&
-            (im.image_ptr[i+1][j]   == WHITE));
-   below = ((im.image_ptr[i-1][j-1] == BLACK) ||
-            (im.image_ptr[i][j-1]   == WHITE) ||
-            (im.image_ptr[i+1][j-1] == BLACK));
-   return (above && with && below);
-}
-
-private bool a2 (bmpBITMAP_FILE &im, int i, int j) {
-   bool left;
-   bool with;
-   bool right;
-
-   left = ((im.image_ptr[i-1][j-1] == BLACK) ||
-           (im.image_ptr[i-1][j]   == BLACK) ||
-           (im.image_ptr[i-1][j+1] == BLACK));
-   with = ((im.image_ptr[i][j-1]   == WHITE) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i][j+1]   == WHITE));
-   right = ((im.image_ptr[i+1][j-1] == BLACK) ||
-            (im.image_ptr[i+1][j]   == BLACK) ||
-            (im.image_ptr[i+1][j+1] == BLACK));
-   return (left && with && right);
-}
-
-private bool a3 (bmpBITMAP_FILE &im, int i, int j) {
-   bool ll;
-   bool with;
-   bool ur;
-   ll = ((im.image_ptr[i-1][j]   == BLACK) ||
-         (im.image_ptr[i-1][j-1] == BLACK) ||
-         (im.image_ptr[i][j-1]   == BLACK));
-   with = ((im.image_ptr[i-1][j+1] == WHITE) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i+1][j-1] == WHITE));
-   ur = ((im.image_ptr[i][j+1]   == BLACK) ||
-         (im.image_ptr[i+1][j+1] == BLACK) ||
-         (im.image_ptr[i+1][j]   == BLACK));
-   return (ll && with && ur);
-}
-
-private bool a4 (bmpBITMAP_FILE &im, int i, int j) {
-   bool ul;
-   bool with;
-   bool lr;
-   ul = ((im.image_ptr[i-1][j]   == BLACK) || 
-         (im.image_ptr[i-1][j+1] == BLACK) ||
-         (im.image_ptr[i][j+1]   == BLACK));
-   with = ((im.image_ptr[i-1][j-1] == WHITE) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i+1][j+1] == WHITE));
-   lr = ((im.image_ptr[i+1][j]   == BLACK) ||
-         (im.image_ptr[i+1][j-1] == BLACK) ||
-         (im.image_ptr[i][j-1]   == BLACK));
-   return (ul && with && lr);
-}
-
-private bool IsAnA (bmpBITMAP_FILE &im, int i, int j) {
-   return ( a1(im,i,j) || a2(im,i,j) || a3(im,i,j) || a4(im,i,j));
-}
-
-private bool b1 (bmpBITMAP_FILE &im, int i, int j) {
-   bool above;
-   bool with;
-   above = ((im.image_ptr[i-1][j+1] == BLACK) ||
-            (im.image_ptr[i][j+1]   == BLACK) ||
-            (im.image_ptr[i+1][j+1] == BLACK));
-   with = ((im.image_ptr[i-1][j-1] == WHITE) &&
-           (im.image_ptr[i][j-1]   == BLACK) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i+1][j]   == WHITE));
-   return (above && with);
-}
-
-private bool b2 (bmpBITMAP_FILE &im, int i, int j) {
-   bool left;
-   bool with;
-   left = ((im.image_ptr[i-1][j-1] == BLACK) ||
-           (im.image_ptr[i-1][j]   == BLACK) ||
-           (im.image_ptr[i-1][j+1] == BLACK));
-   with = ((im.image_ptr[i][j-1]   == WHITE) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i+1][j]   == BLACK) &&
-           (im.image_ptr[i+1][j+1] == WHITE));
-   return (left && with);
-}
-
-private bool b3 (bmpBITMAP_FILE &im, int i, int j) {
-   bool below;
-   bool with;
-   below = ((im.image_ptr[i-1][j-1] == BLACK) ||
-            (im.image_ptr[i][j-1]   == BLACK) ||
-            (im.image_ptr[i+1][j-1] == BLACK));
-   with = ((im.image_ptr[i-1][j]   == WHITE) &&
-           (im.image_ptr[i][j]     == BLACK) &&
-           (im.image_ptr[i][j+1]   == BLACK) &&
-           (im.image_ptr[i+1][j+1] == WHITE));
-   return (below && with);
-}
-
-private bool b4 (bmpBITMAP_FILE &im, int i, int j) {
-   bool right;
-   bool with;
-   right = ((im.image_ptr[i+1][j-1] == BLACK) ||
-            (im.image_ptr[i+1][j]   == BLACK) ||
-            (im.image_ptr[i+1][j+1] == BLACK));
-   with = ((im.image_ptr[i-1][j-1]  == WHITE) &&
-           (im.image_ptr[i-1][j]    == BLACK) &&
-           (im.image_ptr[i][j]      == BLACK) &&
-           (im.image_ptr[i][j+1]    == WHITE));
-   return (right && with);
 }
