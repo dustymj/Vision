@@ -56,9 +56,17 @@ int main() {
 
    // Change_Brightness(copy1, -50);
 
-   // Drop_Dark(copy1, 195);
+   // Histogram_Equalization(copy1);
 
    Change_Contrast(copy1, 2);
+
+   // Reduce_Noise(copy1);
+
+   // Simple_detect_egdes(copy1, 40);
+
+   Kirsh_detect_egdes(copy1, 5, 150);
+   Kirsh_detect_egdes(copy1, 5, 150);
+
 
    cout << endl << "To show that the copy starts as " <<
       "an exact copy of the original,";
