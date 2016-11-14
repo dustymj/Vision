@@ -58,14 +58,22 @@ int main() {
 
    // Histogram_Equalization(copy1);
 
-   Change_Contrast(copy1, 2);
+   Change_Contrast(copy1, 2.5);
 
    // Reduce_Noise(copy1);
 
    // Simple_detect_egdes(copy1, 40);
 
-   Kirsh_detect_egdes(copy1, 5, 150);
-   Kirsh_detect_egdes(copy1, 5, 150);
+   // Kirsh_detect_egdes(copy1, 5, 50);
+   // Kirsh_detect_egdes(copy1, 5, 100);
+   // Kirsh_detect_egdes(copy1, 5, 200);
+   Kirsh_detect_egdes(copy1, 5, 300);
+
+   Magic_eraser(copy1, 25, 0);
+   Magic_eraser(copy1, 45, 1);
+   Magic_eraser(copy1, 40, 2);
+   Magic_eraser(copy1, 35, 3);
+   Magic_eraser(copy1, 30, 4);
 
 
    cout << endl << "To show that the copy starts as " <<

@@ -360,15 +360,63 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
 
    Copy_Image(edges, image);
 
-   // int cursor;
-   //
-   // for(int i = 0; i < bitmap_height - (h_edge+2); i++) {
-   //    for (int j = 0; j < bitmap_width - (w_edge+2); j++) {
-   //       cursor = edges.image_ptr[i][j];
-   //       if(cursor != 0 || cursor != 255)
-   //          cout << "unknown value for edges at: [" << i << "," << j << "]" << endl;
-   //    }
-   // }
-
    Remove_Image(edges);
+}
+
+
+/*------------------------------------------------------------
+   Simple_detect_egdes
+
+   INPUTS
+   image - Pointer to a bitmap image
+   int - Level of difference between pixels
+
+   DESCRIPTION
+   Scans the image looking for large differences in pixel value. if the
+   difference is larger than the threshold (parameter) then an edge element will
+   be marked with black. All other pizels will be colored white.
+
+   RETURNS
+   Nothing
+-------------------------------------------------------------*/
+void Magic_eraser(bmpBITMAP_FILE &image, int threshold, int offset) {
+
+   int bitmap_width;
+   int bitmap_height;
+   int garbage_can;
+   int consecutive;
+
+   bitmap_height = Assemble_Integer(image.info_header.biHeight);
+   bitmap_width  = Assemble_Integer(image.info_header.biWidth);
+
+   for (int i = 0 + offset; i < bitmap_height-11; i += 10) {
+      for (int j = 0; j < bitmap_width-11; j += 10) {
+         garbage_can = 0;
+         // consecutive = 0;
+
+         for(int a = i; a < i+10; a++) {
+            for(int b = j; b < j+10; b++) {
+               if(int(image.image_ptr[a][b]) == 0) {
+                  garbage_can++;
+               }
+            }
+         }
+
+         if(garbage_can > threshold) {
+
+            // count consecutive
+            // for(int a = i; a < i+10; a++) {
+            //    for(int b = j; b < j+10; b++) {
+            //       garbage_can += int(image.image_ptr[a][b]);
+            //    }
+            // }
+            for(int a = i; a < i+10; a++) {
+               for(int b = j; b < j+10; b++) {
+                  image.image_ptr[a][b] = 255;
+               }
+            }
+         }
+
+      }
+   }
 }
