@@ -183,8 +183,8 @@ void Reduce_Noise(bmpBITMAP_FILE &image) {
          median = pixel_values[4];
 
          // Reduce noise in the 3x3 space.
-         for(int a = i; a < (i + 3); i++) {
-            for(int b = j; b < (j + 3); j++) {
+         for(int a = i; ((a < (i + 3)) && (a < bitmap_height)); i++) {
+            for(int b = j; ((b < (j + 3)) && (b < bitmap_width)); j++) {
                image.image_ptr[a][b] = ( (image.image_ptr[a][b] + median) / 2);
             }
          }
