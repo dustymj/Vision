@@ -368,9 +368,11 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
 bool Identical (bmpBITMAP_FILE &a, bmpBITMAP_FILE &b) {
    int height = Assemble_Integer(a.info_header.biHeight);
    int width  = Assemble_Integer(b.info_header.biWidth);
+   height--;
+   width--;
 
-   for (int i = 0; i < height; i++) {
-      for (int j = 0; j < width; j++) {
+   for (int i = 1; i < height; i++) {
+      for (int j = 1; j < width; j++) {
          if (a.image_ptr[i][j] != b.image_ptr[i][j]) {
             return false;
          }
@@ -380,26 +382,30 @@ bool Identical (bmpBITMAP_FILE &a, bmpBITMAP_FILE &b) {
 }
 
 bool Lower (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j-1] == WHITE))
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j-1] == WHITE)) {
       return true;
+   }
    return false;
 }
 
 bool Upper (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j+1] == WHITE))
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i][j+1] == WHITE)) {
       return true;
+   }
    return false;
 }
 
 bool Left (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i-1][j] == WHITE))
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i-1][j] == WHITE)) {
       return true;
+   }
    return false;
 }
 
 bool Right (bmpBITMAP_FILE &im, int i, int j) {
-   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i+1][j] == WHITE))
+   if ((im.image_ptr[i][j] == BLACK) && (im.image_ptr[i+1][j] == WHITE)) {
       return true;
+   }
    return false;
 }
 
@@ -544,16 +550,20 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
 
    int height = Assemble_Integer(image.info_header.biHeight);
    int width  = Assemble_Integer(image.info_header.biWidth);
+   int counter = 0;
    int cycle = 0;
 
    // Readjust height and width so they stay within bounds
    height--;
    width--;
 
+   // Initialize final_points and contour_points
    Copy_Image(image, final_points);
+   Copy_Image(image, contour_points);
 
-   // Set the final_points image to all white
+   // Set the final_points and contour_points image to all white
    Change_Brightness(final_points, WHITE);
+   Change_Brightness(contour_points, WHITE);
 
    // Start the thin loop
    do {
@@ -613,10 +623,12 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
 
       // Increment the counter, not to exceed 4.
       cycle++;
+      counter++;
       if(cycle == 4) {
          cycle = 0;
       }
-   } while (true); // loop indefinitely until image is thinned.
+   } while(!(Identical(final_points,image)));
+   // } while(counter < 200);
    
    // At this point, the original image has been thinned. return.
    Remove_Image(final_points);
