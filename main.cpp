@@ -56,7 +56,7 @@ int main() {
 
    // Change_Brightness(copy1, -50);
 
-   // Histogram_Equalization(copy1);
+   Histogram_Equalization(copy1);
 
    Change_Contrast(copy1, 2);
 
