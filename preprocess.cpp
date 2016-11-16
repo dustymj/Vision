@@ -709,13 +709,14 @@ int _check_horizontal(bmpBITMAP_FILE &image, int a, int b, int j) {
    RETURNS
    Nothing
 -------------------------------------------------------------*/
-void Hough_transform(bmpBITMAP_FILE &image, int threshold, int offset) {
+void Hough_transform(bmpBITMAP_FILE &image, int reduction) {
 
    int bitmap_width;
    int bitmap_height;
    int current_val;
    int compare_val;
    int horizontals;
+   int threshold;
    int hough_histogram[16] = {0};
 
    bitmap_height = Assemble_Integer(image.info_header.biHeight);
@@ -723,7 +724,7 @@ void Hough_transform(bmpBITMAP_FILE &image, int threshold, int offset) {
 
    // int index = 1;
    // Create Hough Histogram
-   for (int i = 0 + offset; i < bitmap_height-100; i += 100) {
+   for (int i = 0; i < bitmap_height-100; i += 100) {
       for (int j = 0; j < bitmap_width-100; j += 100) {
 
          for(int a = i; a < i+100; a++) {
@@ -816,20 +817,15 @@ void Hough_transform(bmpBITMAP_FILE &image, int threshold, int offset) {
             }
          }
 
-   //       index++;
-   //    }
-   // }
-   //
-   // cout << "Hough Histogram for first block horizontal lines:" << endl;
-   // for(int i = 0; i < 16; i++) {
-   //    cout << hough_histogram[i] << endl;
-   // }
-   //
-   // index = 1;
-   // // Draw in lines
-   // for (int i = 0 + offset; i < bitmap_height-100 && index < 2; i += 100) {
-   //    cout << "removing stuff" << endl;
-   //    for (int j = 0; j < bitmap_width-100; j += 100) {
+
+         threshold = hough_histogram[0];
+         for(int ic = 1; ic < 16; ic++) {
+            if(hough_histogram[ic] > threshold) {
+               threshold = hough_histogram[ic];
+            }
+         }
+
+         threshold -= reduction;
 
          for(int a = i; a < i+100; a++) {
             for(int b = j; b < j+100; b++) {
