@@ -545,8 +545,9 @@ bool b4 (bmpBITMAP_FILE &im, int i, int j) {
    Nothing
 ----------------------------------------------------------------------------------------------*/
 void Thin_Edges (bmpBITMAP_FILE &image) {
-   bmpBITMAP_FILE final_points;
+   bmpBITMAP_FILE check_image;
    bmpBITMAP_FILE contour_points;
+   bmpBITMAP_FILE final_points;
 
    int height = Assemble_Integer(image.info_header.biHeight);
    int width  = Assemble_Integer(image.info_header.biWidth);
@@ -557,9 +558,9 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
    height--;
    width--;
 
-   // Initialize final_points and contour_points
-   Copy_Image(image, final_points);
+   // Initialize the images
    Copy_Image(image, contour_points);
+   Copy_Image(image, final_points);
 
    // Set the final_points and contour_points image to all white
    Change_Brightness(final_points, WHITE);
@@ -567,6 +568,9 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
 
    // Start the thin loop
    do {
+      if (cycle == 0) {
+         Copy_Image(image, check_image);
+      }
 
       // Find final points in the image
       for (int i = 1; i < height; i++) {
@@ -627,12 +631,14 @@ void Thin_Edges (bmpBITMAP_FILE &image) {
       if(cycle == 4) {
          cycle = 0;
       }
-   } while(!(Identical(final_points,image)));
+   } while(!(Identical(image,check_image)));
    // } while(counter < 200);
+   cout << "Thinning went through " << counter << " iterations" << endl;
    
    // At this point, the original image has been thinned. return.
    Remove_Image(final_points);
    Remove_Image(contour_points);
+   Remove_Image(check_image);
 }
 
 /*------------------------------------------------------------
