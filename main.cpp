@@ -64,17 +64,25 @@ int main() {
 
    // Simple_detect_egdes(copy1, 40);
 
-   // Kirsh_detect_egdes(copy1, 5, 280);
    Kirsh_detect_egdes(copy1, 7, 550);
+   // Kirsh_detect_egdes(copy1, 5, 150);
+
+   cout << "Begin thinning the image" << endl;
+   Thin_Edges(copy1);
 
    Hough_transform(copy1, 2000, 0);
 
-   // Magic_eraser(copy1, 15, 0);
+   // Kirsh_detect_egdes(copy1, 5, 50);
+   // Kirsh_detect_egdes(copy1, 5, 100);
+   // Kirsh_detect_egdes(copy1, 5, 200);
+   // Kirsh_detect_egdes(copy1, 5, 300);
+>>>>>>> 358b842e17cb652d43db7b30666dadc495024518
+
+   // Magic_eraser(copy1, 25, 0);
    // Magic_eraser(copy1, 45, 1);
    // Magic_eraser(copy1, 40, 2);
    // Magic_eraser(copy1, 35, 3);
    // Magic_eraser(copy1, 30, 4);
-
 
    cout << endl << "To show that the copy starts as " <<
       "an exact copy of the original,";
