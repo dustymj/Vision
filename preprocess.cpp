@@ -275,6 +275,7 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
    int positive_diag;
    int k_three[9] = {0};
    int k_five[25] = {0};
+   int k_seven[49] = {0};
 
    bmpBITMAP_FILE edges;
 
@@ -283,19 +284,13 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
    bitmap_height = Assemble_Integer(image.info_header.biHeight);
    bitmap_width  = Assemble_Integer(image.info_header.biWidth);
 
-   h_edge = bitmap_height % 3;
-   w_edge = bitmap_width % 3;
-
-   // for(int i = 0; i < bitmap_height; i++) {
-   //    for (int j = 0; j < bitmap_width; j++) {
-   //       edges.image_ptr[i][j] = 255;
-   //    }
-   // }
+   h_edge = bitmap_height % op_size;
+   w_edge = bitmap_width % op_size;
 
    int edge_elnt = 0;
 
-   for(int i = 0; i < bitmap_height - (h_edge+4); i++) {
-      for (int j = 0; j < bitmap_width - (w_edge+4); j++) {
+   for(int i = 0; i < bitmap_height - (h_edge+1); i++) {
+      for (int j = 0; j < bitmap_width - (w_edge+1); j++) {
          count = 0;
 
          if(op_size == 3) {
@@ -354,6 +349,49 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
             else
                edges.image_ptr[i+1][j+1] = 255;
          }
+         else if(op_size == 7) {
+            for(int a = i; a < (i + 7); a++) {
+               for(int b = j; b < (j + 7); b++) {
+                  k_seven[count] = int(image.image_ptr[a][b]);
+                  count++;
+               }
+            }
+
+            horizontal    = abs((k_seven[0] + k_seven[1] + k_seven[2] + k_seven[3] + k_seven[4] + k_seven[5] + k_seven[6] +
+                                 k_seven[7] + k_seven[8] + k_seven[9] + k_seven[10] + k_seven[11] + k_seven[12] + k_seven[13] +
+                                 k_seven[14] + k_seven[15] + k_seven[16] + k_seven[17] + k_seven[18] + k_seven[19] + k_seven[20]) -
+                                (k_seven[28] + k_seven[29] + k_seven[30] + k_seven[31] + k_seven[32] + k_seven[33] + k_seven[34] +
+                                 k_seven[35] + k_seven[36] + k_seven[37] + k_seven[38] + k_seven[39] + k_seven[40] + k_seven[41] +
+                                 k_seven[42] + k_seven[43] + k_seven[44] + k_seven[45] + k_seven[46] + k_seven[47] + k_seven[48]));
+
+            vertical      = abs((k_seven[0] + k_seven[7] + k_seven[14] + k_seven[21] + k_seven[28] + k_seven[35] + k_seven[42] +
+                                 k_seven[1] + k_seven[8] + k_seven[15] + k_seven[22] + k_seven[29] + k_seven[36] + k_seven[43] +
+                                 k_seven[2] + k_seven[9] + k_seven[16] + k_seven[23] + k_seven[30] + k_seven[37] + k_seven[44]) -
+                                (k_seven[4] + k_seven[11] + k_seven[18] + k_seven[25] + k_seven[32] + k_seven[39] + k_seven[46] +
+                                 k_seven[5] + k_seven[12] + k_seven[19] + k_seven[26] + k_seven[33] + k_seven[40] + k_seven[47] +
+                                 k_seven[6] + k_seven[13] + k_seven[20] + k_seven[27] + k_seven[34] + k_seven[41] + k_seven[48]));
+
+            positive_diag = abs((k_seven[0] + k_seven[1] + k_seven[2] + k_seven[3] + k_seven[4] + k_seven[5] + k_seven[7] +
+                                 k_seven[8] + k_seven[9] + k_seven[10] + k_seven[11] + k_seven[14] + k_seven[15] + k_seven[16] +
+                                 k_seven[17] + k_seven[21] + k_seven[22] + k_seven[23] + k_seven[28] + k_seven[29] + k_seven[35]) -
+                                (k_seven[13] + k_seven[19] + k_seven[20] + k_seven[25] + k_seven[26] + k_seven[27] + k_seven[31] +
+                                 k_seven[32] + k_seven[33] + k_seven[34] + k_seven[37] + k_seven[38] + k_seven[39] + k_seven[40] +
+                                 k_seven[41] + k_seven[43] + k_seven[44] + k_seven[45] + k_seven[46] + k_seven[47] + k_seven[48]));
+
+            negative_diag = abs((k_seven[1] + k_seven[2] + k_seven[3] + k_seven[4] + k_seven[5] + k_seven[6] + k_seven[9] +
+                                 k_seven[10] + k_seven[11] + k_seven[12] + k_seven[13] + k_seven[17] + k_seven[18] + k_seven[19] +
+                                 k_seven[20] + k_seven[25] + k_seven[26] + k_seven[27] + k_seven[33] + k_seven[34] + k_seven[41]) -
+                                (k_seven[7] + k_seven[14] + k_seven[15] + k_seven[21] + k_seven[22] + k_seven[23] + k_seven[28] +
+                                 k_seven[29] + k_seven[30] + k_seven[31] + k_seven[35] + k_seven[36] + k_seven[37] + k_seven[38] +
+                                 k_seven[39] + k_seven[42] + k_seven[43] + k_seven[44] + k_seven[45] + k_seven[46] + k_seven[47]));
+
+            if(horizontal > threshold || vertical > threshold || positive_diag > threshold || negative_diag > threshold) {
+               edge_elnt++;
+               edges.image_ptr[i+1][j+1] = 0;
+            }
+            else
+               edges.image_ptr[i+1][j+1] = 255;
+         }
       }
    }
    cout << "there were: " << edge_elnt << " edge elements detected!" << endl;
@@ -361,6 +399,19 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
    Copy_Image(edges, image);
 
    Remove_Image(edges);
+}
+
+// Check for horizontal (0 degree) lines
+int _check_horizontal(bmpBITMAP_FILE &image, int a, int b, int j) {
+   int horizontals;
+
+   for(int y = b+1; y < j+100; y++) {
+      if(int(image.image_ptr[a][y]) == 0) {
+         horizontals++;
+      }
+   }
+
+   return horizontals;
 }
 
 
@@ -379,44 +430,225 @@ void Kirsh_detect_egdes(bmpBITMAP_FILE &image, int op_size, int threshold) {
    RETURNS
    Nothing
 -------------------------------------------------------------*/
-void Magic_eraser(bmpBITMAP_FILE &image, int threshold, int offset) {
+void Hough_transform(bmpBITMAP_FILE &image, int threshold, int offset) {
 
    int bitmap_width;
    int bitmap_height;
-   int garbage_can;
-   int consecutive;
+   int current_val;
+   int compare_val;
+   int horizontals;
+   int hough_histogram[16] = {0};
 
    bitmap_height = Assemble_Integer(image.info_header.biHeight);
    bitmap_width  = Assemble_Integer(image.info_header.biWidth);
 
-   for (int i = 0 + offset; i < bitmap_height-11; i += 10) {
-      for (int j = 0; j < bitmap_width-11; j += 10) {
-         garbage_can = 0;
-         // consecutive = 0;
+   // int index = 1;
+   // Create Hough Histogram
+   for (int i = 0 + offset; i < bitmap_height-100; i += 100) {
+      for (int j = 0; j < bitmap_width-100; j += 100) {
 
-         for(int a = i; a < i+10; a++) {
-            for(int b = j; b < j+10; b++) {
+         for(int a = i; a < i+100; a++) {
+            for(int b = j; b < j+100; b++) {
                if(int(image.image_ptr[a][b]) == 0) {
-                  garbage_can++;
+                  current_val = int(image.image_ptr[a][b]);
+
+                  if(a == i) {
+                     // horizontals = _check_horizontal(image, a, b, j);
+                     // hough_histogram[0] += horizontals;
+
+                     // We're done, that's all we can check
+                     b = j+100;
+                  }
+                  else { // if(a-1 >= i)
+                     // horizontals = _check_horizontal(image, a, b, j);
+                     // hough_histogram[0] += horizontals;
+
+                     // Check for (~11.25 degree) lines
+                     if(b+4 < j+100)
+                        if(int(image.image_ptr[a-1][b+4]) == 0) { hough_histogram[1]++; }
+
+                     // Check for (~22.5 degree) lines
+                     if(b+3 < j+100)
+                        if(int(image.image_ptr[a-1][b+3]) == 0) { hough_histogram[2]++; }
+
+                     // Check for (~33.75 degree) lines
+                     if(b+2 < j+100)
+                        if(int(image.image_ptr[a-1][b+2]) == 0) { hough_histogram[3]++; }
+
+                     // Check for (45 degree) lines
+                     if(b+1 < j+100)
+                        if(int(image.image_ptr[a-1][b+1]) == 0) { hough_histogram[4]++; }
+
+                     if(a-2 >= i){
+
+                        // Check for (45 degree) lines
+                        if(b+1 < j+100)
+                           if(int(image.image_ptr[a-2][b+1]) == 0) { hough_histogram[5]++; }
+
+                        if(a-3 >= i){
+
+                           // Check for (45 degree) lines
+                           if(b+1 < j+100)
+                              if(int(image.image_ptr[a-3][b+1]) == 0) { hough_histogram[6]++; }
+
+                           if(a-4 >= i){
+
+                              // Check for (45 degree) lines
+                              if(b+1 < j+100)
+                                 if(int(image.image_ptr[a-4][b+1]) == 0) { hough_histogram[7]++; }
+
+                              // Check for (90 degree) lines
+                              if(int(image.image_ptr[a-4][b]) == 0) { hough_histogram[8]++; }
+
+                              // Check for (45 degree) lines
+                              if(b-1 > j)
+                                 if(int(image.image_ptr[a-4][b-1]) == 0) { hough_histogram[9]++; }
+                           }
+
+                           // Check for (45 degree) lines
+                           if(b-1 > j)
+                              if(int(image.image_ptr[a-3][b-1]) == 0) { hough_histogram[10]++; }
+                        }
+
+                        // Check for (45 degree) lines
+                        if(b-1 > j)
+                           if(int(image.image_ptr[a-2][b-1]) == 0) { hough_histogram[11]++; }
+                     }
+
+                     // Check for (135 degree) lines
+                     if(b-1 > j)
+                        if(int(image.image_ptr[a-1][b-1]) == 0) { hough_histogram[12]++; }
+
+                     // Check for (135 degree) lines
+                     if(b-2 > j)
+                        if(int(image.image_ptr[a-1][b-2]) == 0) { hough_histogram[13]++; }
+
+                     // Check for (135 degree) lines
+                     if(b-3 > j)
+                        if(int(image.image_ptr[a-1][b-3]) == 0) { hough_histogram[14]++; }
+
+                     // Check for (135 degree) lines
+                     if(b-4 > j)
+                        if(int(image.image_ptr[a-1][b-4]) == 0) { hough_histogram[15]++; }
+                  }
+
+
                }
             }
          }
 
-         if(garbage_can > threshold) {
+   //       index++;
+   //    }
+   // }
+   //
+   // cout << "Hough Histogram for first block horizontal lines:" << endl;
+   // for(int i = 0; i < 16; i++) {
+   //    cout << hough_histogram[i] << endl;
+   // }
+   //
+   // index = 1;
+   // // Draw in lines
+   // for (int i = 0 + offset; i < bitmap_height-100 && index < 2; i += 100) {
+   //    cout << "removing stuff" << endl;
+   //    for (int j = 0; j < bitmap_width-100; j += 100) {
 
-            // count consecutive
-            // for(int a = i; a < i+10; a++) {
-            //    for(int b = j; b < j+10; b++) {
-            //       garbage_can += int(image.image_ptr[a][b]);
-            //    }
-            // }
-            for(int a = i; a < i+10; a++) {
-               for(int b = j; b < j+10; b++) {
-                  image.image_ptr[a][b] = 255;
+         for(int a = i; a < i+100; a++) {
+            for(int b = j; b < j+100; b++) {
+               if(int(image.image_ptr[a][b]) == 0) {
+
+                  if(a == i && hough_histogram[0] < threshold) {
+
+
+                     // We're done, that's all we can check
+                     b = j+100;
+                  }
+                  else { // if(a-1 >= i)
+
+                     // Check for (~11.25 degree) lines
+                     if(b+4 < j+100 && hough_histogram[1] < threshold)
+                        image.image_ptr[a-1][b+4] = 255;
+
+                     // Check for (~22.5 degree) lines
+                     if(b+3 < j+100 && hough_histogram[2] < threshold)
+                        image.image_ptr[a-1][b+3] = 255;
+
+                     // Check for (~33.75 degree) lines
+                     if(b+2 < j+100 && hough_histogram[3] < threshold)
+                        image.image_ptr[a-1][b+2] = 255;
+
+                     // Check for (45 degree) lines
+                     if(b+1 < j+100 && hough_histogram[4] < threshold)
+                        image.image_ptr[a-1][b+1] = 255;
+
+                     if(a-2 >= i){
+
+                        // Check for (45 degree) lines
+                        if(b+1 < j+100 && hough_histogram[5] < threshold)
+                           image.image_ptr[a-2][b+1] = 255;
+
+                        if(a-3 >= i){
+
+                           // Check for (45 degree) lines
+                           if(b+1 < j+100 && hough_histogram[6] < threshold)
+                              image.image_ptr[a-3][b+1] = 255;
+
+                           if(a-4 >= i){
+
+                              // Check for (45 degree) lines
+                              if(b+1 < j+100 && hough_histogram[7] < threshold)
+                                 image.image_ptr[a-4][b+1] = 255;
+
+                              // Check for (90 degree) lines
+                              if(hough_histogram[8] < threshold)
+                                 image.image_ptr[a-4][b] = 255;
+
+                              // Check for (45 degree) lines
+                              if(b-1 > j && hough_histogram[9] < threshold)
+                                 image.image_ptr[a-4][b-1] = 255;
+                           }
+
+                           // Check for (45 degree) lines
+                           if(b-1 > j && hough_histogram[10] < threshold)
+                              image.image_ptr[a-3][b-1] = 255;
+                        }
+
+                        // Check for (45 degree) lines
+                        if(b-1 > j && hough_histogram[11] < threshold)
+                           image.image_ptr[a-2][b-1] = 255;
+                     }
+
+                     // Check for (135 degree) lines
+                     if(b-1 > j && hough_histogram[12] < threshold)
+                        image.image_ptr[a-1][b-1] = 255;
+
+                     // Check for (135 degree) lines
+                     if(b-2 > j && hough_histogram[13] < threshold)
+                        image.image_ptr[a-1][b-2] = 255;
+
+                     // Check for (135 degree) lines
+                     if(b-3 > j && hough_histogram[14] < threshold)
+                        image.image_ptr[a-1][b-3] = 255;
+
+                     // Check for (135 degree) lines
+                     if(b-4 > j && hough_histogram[15] < threshold)
+                        image.image_ptr[a-1][b-4] = 255;
+                  }
+
+
                }
             }
          }
 
+            // cout << "Hough Histogram for first block horizontal lines:" << endl;
+            // cout << "At block: " << j << endl;
+            for(int i = 0; i < 16; i++) {
+               // cout << hough_histogram[i] << endl;
+               hough_histogram[i] = 0;
+            }
+
+         // index++;
       }
    }
+
+
 }
