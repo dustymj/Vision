@@ -56,6 +56,8 @@ int main() {
 
    // Change_Brightness(copy1, -50);
 
+   Average(copy1, 4);
+
    Histogram_Equalization(copy1);
 
    Change_Contrast(copy1, 2.5);
@@ -70,15 +72,22 @@ int main() {
    cout << "Begin thinning the image" << endl;
    Thin_Edges(copy1);
 
-   Hough_transform(copy1, 40);
+   Hough_transform(copy1, 60, 93, 0, 10, false);
 
-   Thin_Edges(copy1);
+   // Magic_eraser(copy1, 1100, 93);
 
-   Hough_transform(copy1, 40);
+   // Thin_Edges(copy1);
 
-   Thin_Edges(copy1);
+   // Hough_transform(copy1, 20, 46, 0, false);
 
-   Hough_transform(copy1, 40);
+   // Hough_transform(copy1, 50, 10, false);
+   // Hough_transform(copy1, 4, 10, 4, false);
+
+   // Thin_Edges(copy1);
+   //
+   // Hough_transform(copy1, 50, 100);
+   // Hough_transform(copy1, 20, 200);
+
 
    // Thin_Edges(copy1);
    //
