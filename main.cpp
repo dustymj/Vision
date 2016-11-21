@@ -3,19 +3,21 @@
 // Micah Most
 
 // Standard header files
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
 #include <string>
-#include <algorithm>
 
 using namespace std;
 
 // Classes
 #include "image.cpp"
 #include "preprocess.cpp"
+#include "process.cpp"
 
 // Main function
 int main() {
