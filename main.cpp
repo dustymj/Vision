@@ -74,7 +74,9 @@ int main() {
    cout << "Begin thinning the image" << endl;
    Thin_Edges(copy1);
 
-   Hough_transform(copy1, 60, 93, 0, 10, false);
+   // Hough_transform(copy1, 60, 93, 0, 10, false);
+
+   dustin_Hough_Transform(copy1,170);
 
    // Magic_eraser(copy1, 1100, 93);
 
