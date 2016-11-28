@@ -5,12 +5,18 @@
 // Standard header files
 #include <algorithm>
 #include <cmath>
+#include <dirent.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <string>
+#include <unistd.h>
+#include <vector>
 
 using namespace std;
 
@@ -76,7 +82,8 @@ int main() {
 
    // Hough_transform(copy1, 60, 93, 0, 10, false);
 
-   dustin_Hough_Transform(copy1,170);
+   // dustin_Hough_Transform(copy1,170);
+   outsource_Hough_Transform(copy1, 170);
 
    // Magic_eraser(copy1, 1100, 93);
 
