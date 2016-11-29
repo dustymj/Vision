@@ -75,17 +75,13 @@ int main() {
    // Simple_detect_egdes(copy1, 40);
 
    Kirsh_detect_egdes(copy1, 7, 550);
-   // Kirsh_detect_egdes(copy1, 5, 150);
 
    cout << "Begin thinning the image" << endl;
    Thin_Edges(copy1);
 
-   // Hough_transform(copy1, 60, 93, 0, 10, false);
+   // outsource_Hough_Transform(copy1, 170);
 
-   // dustin_Hough_Transform(copy1,170);
-   outsource_Hough_Transform(copy1, 170);
-
-   // Magic_eraser(copy1, 1100, 93);
+   Magic_eraser(copy1, 60, 31);
 
    // Thin_Edges(copy1);
 

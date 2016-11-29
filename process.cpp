@@ -234,6 +234,9 @@ void _draw_line(bmpBITMAP_FILE line_image, float x1, float y1, float x2, float y
    // Bresenham's line algorithm
    bool steep = (fabs(y2 - y1) > fabs(x2 - x1));
 
+   int width_max  = Assemble_Integer(line_image.info_header.biWidth);
+   int height_max = Assemble_Integer(line_image.info_header.biHeight);
+
    if(steep) {
       swap(x1, y1);
       swap(x2, y2);
@@ -254,10 +257,13 @@ void _draw_line(bmpBITMAP_FILE line_image, float x1, float y1, float x2, float y
    int maxX = (int)x2;
 
    for(int x=(int)x1; x<maxX; x++) {
-      if(steep)
-         line_image.image_ptr[y][x] = BLACK;
-      else
-         line_image.image_ptr[x][y] = BLACK;
+
+      if (x >= 0 && x < width_max && y >= 0 && y < height_max) {
+         if(steep)
+            line_image.image_ptr[y][x] = BLACK;
+         else
+            line_image.image_ptr[x][y] = BLACK;
+      }
 
       error -= dy;
       if(error < 0) {
